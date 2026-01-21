@@ -52,16 +52,18 @@ Add the folders to your MATLAB path.
 ## 💻 Usage
 
 To reproduce the experimental results (e.g., Two-Moons benchmark with noise), you can run the main configuration script.
-Example: Running a Robustness TestMatlab% Configuration: Feature Noise = 0.3, Label Flip Rate = 0.2
+
+Example: Running a Robustness Test
+Matlab Configuration: Feature Noise = 0.3, Label Flip Rate = 0.2
 featNoise = 0.3;
 flipRate  = 0.2;
 trainRatio = 0.8;
 hidden_sizes = [16, 16]; % 2-Hidden Layer MLP
 
-% Run the benchmark comparison (DDWSARNET vs. BP vs. PSO)
+Run the benchmark comparison (DDWSARNET vs. BP vs. PSO)
 [opt, summary] = wsar_deep_layerwise_vs_bp_pso_cnn_cfg(featNoise, flipRate, trainRatio, hidden_sizes);
 
-% Display Results
+Display Results
 disp('Test Cross-Entropy Results:');
 fprintf('DDWSARNET: %.4f\n', summary.wsar_layerwise.ce);
 fprintf('BP (Adam): %.4f\n', summary.bp.ce);
@@ -69,12 +71,14 @@ fprintf('BP (Adam): %.4f\n', summary.bp.ce);
 ## 📉 Reproduction of Paper Results
 
 The repository includes scripts to generate the "Win Rate" tables and noise robustness plots (Fig. 2 and Fig. 3 in the manuscript).
-Run run_sensitivity_analysis.m (if available) to sweep through $\sigma_{noise} \in [0.1, 0.5]$.
+Run run_sensitivity_analysis.m (if available) to sweep through \sigma_{noise}\in\left[0.1,0.5\right].
 Results will be saved in the results/ directory.
 
 ## 📜 Citation
 
-If you use this code or the DDWSARNET algorithm in your research, please cite our paper:Text:Bal, C., & [Co-Author]. "DDWSARNET: A Layer-Wise Dynamic-τ WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks." Under Review, 2026.BibTeX:Code snippet@article{ddwsarnet2026,
+If you use this code or the DDWSARNET algorithm in your research, please cite our paper:
+Text:Bal, C.,. "DDWSARNET: A Layer-Wise Dynamic-τ WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks." Under Review, 2026.
+BibTeX:Code snippet@article{ddwsarnet2026,
   title={DDWSARNET: A Layer-Wise Dynamic-τ  WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks},
   author={Bal, Cagatay},
   journal={Under Review},
