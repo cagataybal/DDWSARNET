@@ -34,6 +34,7 @@ DDWSARNET/
 │   └── layer_slices.m         # Helper for parameter decomposition
 ├── LICENSE                    # MIT License file
 └── README.md                  # Project documentation
+```
 
 🚀 Installation & Requirements
 This code is implemented in MATLAB.
