@@ -23,12 +23,12 @@ core_seed   = 32;
 rng(core_seed);
 
 N           = 1000;
-featNoise   = 0.30;
-flipRate    = 0.30;
-trainRatio  = 0.70;
+featNoise   = 0.10;
+flipRate    = 0.10;
+trainRatio  = 0.80;
 
 % MLP Architecture
-hidden_sizes = [16 16]; 
+hidden_sizes = [32 32]; 
 actHidden    = 'relu';
 K            = 2;
 LBUB         = 5;       % Weight bounds [-5, 5]
@@ -55,6 +55,10 @@ teId = idx(ntr+1:end);
 
 Xtr = Xz(trId, :); ytr = y(trId);
 Xte = Xz(teId, :); yte = y(teId);
+
+% Force column vectors (Safety against broadcasting errors)
+ytr = ytr(:);
+yte = yte(:);
 
 %% 3. Setup Problem Dimensions
 in_dim   = size(Xtr, 2);
@@ -121,24 +125,31 @@ opts_cnn = trainingOptions('adam', 'MaxEpochs', 12, 'Verbose', false, 'Shuffle',
 [net_cnn, info_cnn] = trainNetwork(Ximg_all(:,:,:,trId), Ycat(trId), layers, opts_cnn);
 
 %% 9. Evaluation & Reporting
-fprintf('\n--- Performance Evaluation ---\n');
+fprintf('\n======================================================\n');
+fprintf('             FINAL PERFORMANCE METRICS                \n');
+fprintf('======================================================\n');
 
-% Helper to compute stats
+% 1. WSAR & PSO (Metaheuristics)
 eval_model = @(th, name) evaluate_metrics(th, Xte, yte, dim_list, actHidden, name);
-
 res_mono = eval_model(x_mono, 'Monolithic WSAR');
 res_lw   = eval_model(theta_LW, 'DDWSARNET');
 res_pso  = eval_model(theta_pso, 'PSO');
 
-% BP Eval
+% 2. BP (Backpropagation)
 P_bp = net_bp(mapminmax('apply', Xte', ps_in))';
 ce_bp = nn_loss(P_bp, yte, K);
-fprintf('BP (PatternNet)   | CE: %.4f\n', ce_bp);
+[~, yhat_bp] = max(P_bp, [], 2); yhat_bp = yhat_bp - 1;
+acc_bp = mean(yhat_bp(:) == yte(:)) * 100;
+fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'BP (PatternNet)', acc_bp, ce_bp);
 
-% CNN Eval
-[~, scores_cnn] = classify(net_cnn, Ximg_all(:,:,:,teId));
+% 3. CNN (Deep Learning)
+[YPred_cnn, scores_cnn] = classify(net_cnn, Ximg_all(:,:,:,teId));
 ce_cnn = nn_loss(scores_cnn, yte, K);
-fprintf('CNN (Adam)        | CE: %.4f\n', ce_cnn);
+yhat_cnn = double(YPred_cnn) - 1;
+acc_cnn = mean(yhat_cnn(:) == yte(:)) * 100;
+fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'CNN (Adam)', acc_cnn, ce_cnn);
+
+fprintf('======================================================\n');
 
 % Plot Convergence
 figure('Name','Convergence Comparison');
@@ -157,9 +168,13 @@ end
 
 function res = evaluate_metrics(theta, X, y, dim_list, act, name)
     [~, P] = forward_mlp(theta, X, dim_list, act);
-    [ce, mse] = nn_loss(P, y, dim_list(end));
+    % Loss calculation
+    ce = nn_loss(P, y, dim_list(end));
+    % Accuracy calculation
     [~, yhat] = max(P, [], 2); yhat = yhat - 1;
-    acc = mean(yhat == y) * 100;
-    fprintf('%-18s | Acc: %.2f%% | CE: %.4f | MSE: %.4f\n', name, acc, ce, mse);
+    acc = mean(yhat(:) == y(:)) * 100; % Force column vectors for safety
+    
+    % Print without MSE
+    fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', name, acc, ce);
     res.ce = ce; res.acc = acc;
 end

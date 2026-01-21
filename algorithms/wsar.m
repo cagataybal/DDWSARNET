@@ -105,15 +105,22 @@ function [xbest, fbest, exitflag, output] = wsar(fun, nvars, lb, ub, opts)
         for j = 1:popsize
             if agent_OBJ(j) > best_c_obj
                 r1 = rand(); r2 = rand();
-                step = r1 * (BEST_center - abs(agent(j,:))) + ...
-                       r2 * (abs(agent(j,:)) - WORST_center);
+                step = r1 * (BEST_center - (agent(j,:))) + ...
+                       r2 * ((agent(j,:)) - WORST_center);
                 nagent(j,:) = agent(j,:) + step;
             else
                 % Random Move (Levy-flight like or simple stochastic)
                 step = rand();
                 nagent(j,:) = nagent(j,:) + (2*rand(1,nvars)-1)*step;
             end
-            
+            % % Trust-region fix
+            step = nagent(j,:) - agent(j,:);
+            max_norm = 0.25*norm(agent(j,:)) + 1e-8;   
+            sn = norm(step);
+            if sn > max_norm
+                step = step * (max_norm / (sn + 1e-12));
+                nagent(j,:) = agent(j,:) + step;
+            end
             % Boundary Clamp
             nagent(j,:) = min(max(nagent(j,:), lb), ub);
         end
