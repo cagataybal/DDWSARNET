@@ -1,7 +1,6 @@
 DDWSARNET: Layer-Wise Dynamic-τ WSAR Neural Network
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![MATLAB](https://img.shields.io/badge/Made%20with-MATLAB-R2024b-blue.svg)](https://www.mathworks.com/products/matlab.html)
 
 **Official MATLAB implementation of DDWSARNET.**
 
