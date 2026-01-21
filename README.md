@@ -1,4 +1,4 @@
-DDWSARNET: Layer-Wise Dynamic-$\tau$ WSAR Neural Network
+DDWSARNET: Layer-Wise Dynamic-τ WSAR Neural Network
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MATLAB](https://img.shields.io/badge/Made%20with-MATLAB-R2024b-blue.svg)](https://www.mathworks.com/products/matlab.html)
@@ -6,7 +6,7 @@ DDWSARNET: Layer-Wise Dynamic-$\tau$ WSAR Neural Network
 **Official MATLAB implementation of DDWSARNET.**
 
 This repository contains the source code for the paper:  
-**"DDWSARNET: A Layer-Wise Dynamic-$\tau$ WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks"**.
+**"DDWSARNET: A Layer-Wise Dynamic-τ WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks"**.
 
 ## 📌 Overview
 
