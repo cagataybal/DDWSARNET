@@ -23,12 +23,12 @@ core_seed   = 32;
 rng(core_seed);
 
 N           = 1000;
-featNoise   = 0.10;
-flipRate    = 0.10;
-trainRatio  = 0.80;
+featNoise   = 0.30;
+flipRate    = 0.30;
+trainRatio  = 0.70;
 
 % MLP Architecture
-hidden_sizes = [32 32]; 
+hidden_sizes = [16 16]; 
 actHidden    = 'relu';
 K            = 2;
 LBUB         = 5;       % Weight bounds [-5, 5]
@@ -129,20 +129,35 @@ fprintf('\n======================================================\n');
 fprintf('             FINAL PERFORMANCE METRICS                \n');
 fprintf('======================================================\n');
 
-% 1. WSAR & PSO (Metaheuristics)
-eval_model = @(th, name) evaluate_metrics(th, Xte, yte, dim_list, actHidden, name);
-res_mono = eval_model(x_mono, 'Monolithic WSAR');
-res_lw   = eval_model(theta_LW, 'DDWSARNET');
-res_pso  = eval_model(theta_pso, 'PSO');
+% --- 1. DDWSARNET (Layer-Wise) ---
+[~, P_lw] = forward_mlp(theta_LW, Xte, dim_list, actHidden);
+[~, yhat_lw] = max(P_lw, [], 2); yhat_lw = yhat_lw - 1;
+ce_lw = nn_loss(P_lw, yte, K);
+acc_lw = mean(yhat_lw(:) == yte(:)) * 100;
+fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'DDWSARNET', acc_lw, ce_lw);
 
-% 2. BP (Backpropagation)
+% --- 2. Monolithic WSAR ---
+[~, P_mono] = forward_mlp(x_mono, Xte, dim_list, actHidden);
+[~, yhat_mono] = max(P_mono, [], 2); yhat_mono = yhat_mono - 1;
+ce_mono = nn_loss(P_mono, yte, K);
+acc_mono = mean(yhat_mono(:) == yte(:)) * 100;
+fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'Monolithic WSAR', acc_mono, ce_mono);
+
+% --- 3. PSO ---
+[~, P_pso] = forward_mlp(theta_pso, Xte, dim_list, actHidden);
+[~, yhat_pso] = max(P_pso, [], 2); yhat_pso = yhat_pso - 1;
+ce_pso = nn_loss(P_pso, yte, K);
+acc_pso = mean(yhat_pso(:) == yte(:)) * 100;
+fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'PSO', acc_pso, ce_pso);
+
+% --- 4. BP (Backpropagation) ---
 P_bp = net_bp(mapminmax('apply', Xte', ps_in))';
 ce_bp = nn_loss(P_bp, yte, K);
 [~, yhat_bp] = max(P_bp, [], 2); yhat_bp = yhat_bp - 1;
 acc_bp = mean(yhat_bp(:) == yte(:)) * 100;
 fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'BP (PatternNet)', acc_bp, ce_bp);
 
-% 3. CNN (Deep Learning)
+% --- 5. CNN (Deep Learning) ---
 [YPred_cnn, scores_cnn] = classify(net_cnn, Ximg_all(:,:,:,teId));
 ce_cnn = nn_loss(scores_cnn, yte, K);
 yhat_cnn = double(YPred_cnn) - 1;
@@ -150,31 +165,16 @@ acc_cnn = mean(yhat_cnn(:) == yte(:)) * 100;
 fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', 'CNN (Adam)', acc_cnn, ce_cnn);
 
 fprintf('======================================================\n');
-
-% Plot Convergence
-figure('Name','Convergence Comparison');
-plot(out_mono.besthistory, 'b-', 'LineWidth', 1.5); hold on;
-plot(outLW.train_history, 'r-', 'LineWidth', 1.5);
-legend('Monolithic WSAR', 'DDWSARNET (Layer-Wise)');
-xlabel('Evaluations / Progress'); ylabel('Cross-Entropy Loss');
-title('Optimization Landscape Trajectory');
-grid on;
+fprintf(' OUTPUT VARIABLES SAVED IN WORKSPACE:\n');
+fprintf(' -> DDWSARNET:      P_lw (Probs),       yhat_lw (Labels)\n');
+fprintf(' -> Monolithic:     P_mono (Probs),     yhat_mono (Labels)\n');
+fprintf(' -> PSO:            P_pso (Probs),      yhat_pso (Labels)\n');
+fprintf(' -> BP:             P_bp (Probs),       yhat_bp (Labels)\n');
+fprintf(' -> CNN:            scores_cnn (Probs), yhat_cnn (Labels)\n');
+fprintf('======================================================\n');
 
 %% Local Helper for Wrapper
 function ce = nn_ce_wrapper(theta, X, y, dim_list, act)
     [~, P] = forward_mlp(theta, X, dim_list, act);
     ce = nn_loss(P, y, dim_list(end));
-end
-
-function res = evaluate_metrics(theta, X, y, dim_list, act, name)
-    [~, P] = forward_mlp(theta, X, dim_list, act);
-    % Loss calculation
-    ce = nn_loss(P, y, dim_list(end));
-    % Accuracy calculation
-    [~, yhat] = max(P, [], 2); yhat = yhat - 1;
-    acc = mean(yhat(:) == y(:)) * 100; % Force column vectors for safety
-    
-    % Print without MSE
-    fprintf('%-18s | Acc: %.2f%% | CE: %.4f\n', name, acc, ce);
-    res.ce = ce; res.acc = acc;
 end
