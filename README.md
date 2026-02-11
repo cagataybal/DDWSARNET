@@ -76,14 +76,6 @@ Results will be saved in the results/ directory.
 
 ## 📜 Citation
 
-If you use this code or the DDWSARNET algorithm in your research, please cite our paper:
-Text:Bal, C.,. "DDWSARNET: A Layer-Wise Dynamic-τ WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks." Under Review, 2026.
-BibTeX:Code snippet@article{ddwsarnet2026,
-  title={DDWSARNET: A Layer-Wise Dynamic-τ  WSAR Framework for Probabilistic Calibration and Noise Robustness in Deep Neural Networks},
-  author={Bal, Cagatay},
-  journal={Under Review},
-  year={2026},
-  note={Preprint}
-}
+---
 ⚖️ LicenseThis project is licensed under the MIT License. See the LICENSE file for details.
 ***
